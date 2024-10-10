@@ -2,8 +2,17 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation';
 
 const DashboardNavbar = () => {
+
+    const router = useRouter();
+
+    const logout = () => {
+        localStorage.removeItem('token');
+        router.push('/');
+    }
+
     return (
         <div className="drawer">
             <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
@@ -34,12 +43,10 @@ const DashboardNavbar = () => {
                             <li><Link href="/addBill" className="p-3">Add Bill</Link></li>
                             <li><Link href="/splitBill" className="p-3">Split Bill</Link></li>
                             <li><Link href="/friends" className="p-3">Friends</Link></li>
-                            <li><Link href="/" className="rounded-lg bg-base-200 p-3 font-bold">Logout</Link></li>
+                            <li><a onClick={logout} className="rounded-lg bg-base-200 p-3 font-bold">Logout</a></li>
                         </ul>
                     </div>
                 </div>
-                {/* Page content here */}
-                Content
             </div>
             <div className="drawer-side">
                 <label htmlFor="my-drawer-3" aria-label="close sidebar" className="drawer-overlay"></label>
@@ -48,7 +55,7 @@ const DashboardNavbar = () => {
                     <li><Link href="/addBill">Add Bill</Link></li>
                     <li><Link href="/splitBill">Split Bill</Link></li>
                     <li><Link href="/friends">Friends</Link></li>
-                    <li><Link href="/">Logout</Link></li>
+                    <li><a onClick={logout}>Logout</a></li>
                 </ul>
             </div>
         </div>

@@ -1,21 +1,46 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import AuthContext from "../context/authContext"
-import { useContext } from "react"
 import Navbar from "../components/navbar"
+import { useRouter } from "next/navigation"
 
 const Login = () => {
-    const { isAuthenticated, login } = useContext(AuthContext)
+
+    const router = useRouter();
     const [contextLoad, setContextLoad] = useState(true);
+
     useEffect(() => {
-        if (isAuthenticated) {
-            login();
-        }
-        setTimeout(() => {
-            setContextLoad(false);
-        }, 400);
-    }, [isAuthenticated]);
+        const checkAuth = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setContextLoad(false);
+                return;
+            }
+
+            try {
+                const res = await fetch("/api/validate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ token }),
+                });
+
+                const data = await res.json();
+
+                if (data?.success) {
+                    router.push('/dashboard');
+                } else {
+                    localStorage.removeItem('token');
+                }
+            } catch (error) {
+                console.error("Error during authentication check", error);
+            } finally {
+                setContextLoad(false);
+            }
+        };
+        checkAuth();
+    }, []);
 
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
@@ -96,7 +121,7 @@ const Login = () => {
                     console.log(data);
                     localStorage.setItem("token", data.token);
                     setLoading(false);
-                    login();
+                    router.push('/dashboard');
                     return;
                 }
                 return;
@@ -122,7 +147,8 @@ const Login = () => {
             console.log(data)
             if (data?.message == "Success") {
                 localStorage.setItem("token", data.token);
-                login();
+                setLoading(false);
+                router.push('/dashboard');
                 return;
             } else if (data?.message == "Wrong Password") {
                 showAlert("Invalid Password");
