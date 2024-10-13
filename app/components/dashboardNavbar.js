@@ -49,7 +49,7 @@ const DashboardNavbar = () => {
             <ul className="menu menu-horizontal gap-4">
               {/* Navbar menu content here */}
               <li>
-                <Link href="/addBill" className="p-3">
+                <Link href="/dashboard/addbill" className="p-3">
                   Add Bill
                 </Link>
               </li>
