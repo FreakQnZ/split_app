@@ -3,10 +3,8 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/navbar";
 import { useRouter } from "next/navigation";
-import { useUser } from "../context/userContext";
 
 const Login = () => {
-  const { login } = useUser();
   const router = useRouter();
   const [contextLoad, setContextLoad] = useState(true);
 
@@ -126,7 +124,7 @@ const Login = () => {
           console.log(data);
           localStorage.setItem("token", data.token);
           setLoading(false);
-          login(username);
+          localStorage.setItem("username", username);
           router.push("/dashboard");
           return;
         }
@@ -153,7 +151,7 @@ const Login = () => {
       if (data?.message == "Success") {
         localStorage.setItem("token", data.token);
         setLoading(false);
-        login(username);
+        localStorage.setItem("username", username);
         router.push("/dashboard");
         return;
       } else if (data?.message == "Wrong Password") {

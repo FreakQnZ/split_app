@@ -3,15 +3,13 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useUser } from "../context/userContext";
 
 const DashboardNavbar = () => {
-  const { logout: logoutUser } = useUser();
   const router = useRouter();
 
   const logout = () => {
     localStorage.removeItem("token");
-    logoutUser();
+    localStorage.removeItem("username");
     router.push("/");
   };
 

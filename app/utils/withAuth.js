@@ -42,8 +42,11 @@ export default function withAuth(Component) {
     }, []);
 
     if (loading) {
-      // Render loading spinner or message while authentication is being checked
-      return <div>Loading...</div>;
+      return (
+        <div className="min-h-screen flex justify-center items-center">
+          <span className="loading loading-spinner loading-lg"></span>
+        </div>
+      );
     }
 
     // Render the protected component when authentication is validated
