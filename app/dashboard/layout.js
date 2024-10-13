@@ -1,12 +1,17 @@
-import DashboardNavbar from "../components/dashboardNavbar"
+"use client";
 
-export default function RootLayout({ children }) {
-    return (
-      <html lang="en">
-        <body>
-            <DashboardNavbar />
-            {children}
-        </body>
-      </html>
-    )
-  }
+import DashboardNavbar from "../components/dashboardNavbar";
+import withAuth from "../utils/withAuth"; // Adjust the path to your HOC
+
+function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>
+        <DashboardNavbar />
+        {children}
+      </body>
+    </html>
+  );
+}
+
+export default withAuth(RootLayout); // Wrap the layout with withAuth
