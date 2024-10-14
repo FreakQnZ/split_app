@@ -39,6 +39,15 @@ const Login = () => {
       }
     };
     checkAuth();
+    const handleKeyDown = (event) => {
+        if (event.key === 'Enter') {
+          document.getElementById('submitButton').click();
+        }
+      }
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+      };
   }, []);
 
   const [username, setUsername] = useState("");
@@ -289,7 +298,7 @@ const Login = () => {
               />
             </label>
           )}
-          <button onClick={handleSubmit} className="btn btn-primary w-full">
+          <button id="submitButton" onClick={handleSubmit} className="btn btn-primary w-full">
             {loading && (
               <span className=" absolute right-8 loading loading-spinner"></span>
             )}
