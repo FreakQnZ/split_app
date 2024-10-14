@@ -25,7 +25,11 @@ const SplitBill = () => {
 
   // Handle adding a new friend
   const handleAddFriend = async (newParticipant) => {
-    if (!newParticipant.trim()) return;
+    if (typeof newParticipant !== "string" || !newParticipant.trim()) {
+      setError("Please enter a valid friend's username.");
+      setSuggestedFriends([]);
+      return;
+    }
 
     try {
       const alreadyAdded = friends.some(
@@ -46,12 +50,14 @@ const SplitBill = () => {
         setNewFriend("");
         setSuggestedFriends([]);
       } else {
+        setSuggestedFriends([]);
         setError(
           `${newParticipant} does not exist. Please add them to your friends list.`
         );
       }
     } catch (error) {
       console.error("Error checking friendship:", error);
+      setSuggestedFriends([]);
       setError("An error occurred while checking friendship");
     }
   };
@@ -98,8 +104,34 @@ const SplitBill = () => {
     setFriends(updatedFriends);
   };
 
+  const handleRemoveFriend = (index) => {
+    const updatedFriends = friends.filter((_, i) => i !== index);
+    setFriends(updatedFriends);
+  };
+
   const handleAddFriendClick = () => {
     handleAddFriend(newFriend); // Add friend from input field
+  };
+
+  // Function to split amount equally among participants
+  const handleSplitEqually = () => {
+    const numParticipants = friends.length;
+    const amountPerParticipant =
+      numParticipants > 0
+        ? (parseFloat(totalAmount) / numParticipants).toFixed(2)
+        : 0;
+
+    const updatedFriends = friends.map((friend) => ({
+      ...friend,
+      amount: amountPerParticipant,
+    }));
+    setFriends(updatedFriends);
+  };
+
+  // Function to handle submission (e.g., send data to a server)
+  const handleSubmit = () => {
+    // Implement submission logic here (e.g., sending the data to your backend)
+    console.log("Submitting data:", { billName, totalAmount, friends });
   };
 
   return (
@@ -127,10 +159,11 @@ const SplitBill = () => {
               placeholder="Enter total amount"
               className="input input-bordered"
               value={totalAmount}
+              min="0"
               onChange={(e) => setTotalAmount(e.target.value)}
             />
           </div>
-          <label className="label font-semibold">Participants</label>
+          <label className="label font-semibold">Search Participants</label>
           <div className="form-control mb-4 flex gap-2">
             <input
               type="text"
@@ -140,7 +173,7 @@ const SplitBill = () => {
               onChange={handleSearchChange}
             />
             <button className="btn btn-outline" onClick={handleAddFriendClick}>
-              Add Friend
+              Add Participant
             </button>
           </div>
           {error && (
@@ -168,7 +201,7 @@ const SplitBill = () => {
                   <li
                     key={friend.user_id}
                     className="p-2 hover:bg-gray-200 cursor-pointer"
-                    onClick={() => handleAddFriend(friend.username)} // Directly add friend on click
+                    onClick={() => handleAddFriend(friend.username)}
                   >
                     {friend.username}
                   </li>
@@ -180,7 +213,7 @@ const SplitBill = () => {
             <div className="form-control mb-4">
               <label className="label font-semibold">Participants</label>
               {friends.map((friend, index) => (
-                <div key={index} className="flex gap-4 mb-2">
+                <div key={index} className="flex gap-4 mb-2 items-center">
                   <input
                     type="text"
                     className="input input-bordered w-full"
@@ -192,10 +225,41 @@ const SplitBill = () => {
                     placeholder="Amount"
                     className="input input-bordered w-full"
                     value={friend.amount}
+                    min="0"
                     onChange={(e) => handleFriendAmountChange(index, e)}
                   />
+                  <button
+                    onClick={() => handleRemoveFriend(index)}
+                    className="btn btn-outline btn-error"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
                 </div>
               ))}
+            </div>
+          )}
+          {/* Button to split the amount equally */}
+          {friends.length > 0 && (
+            <div className="flex justify-between mb-4">
+              <button className="btn btn-primary" onClick={handleSplitEqually}>
+                Split Equally
+              </button>
+              <button className="btn btn-success" onClick={handleSubmit}>
+                Submit
+              </button>
             </div>
           )}
         </div>
