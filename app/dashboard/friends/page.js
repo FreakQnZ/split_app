@@ -112,7 +112,7 @@ const Friends = () => {
     return (
         <div className="min-h-screen bg-gray-100 flex justify-center items-center p-4">
             <div
-                className="flex flex-col lg:flex-row gap-6 w-full"
+                className="flex flex-col-reverse lg:flex-row gap-6 w-full"
                 style={{ height: "calc(100vh - 64px)" }}
             >
                 <div className="flex-1 bg-white shadow-lg rounded-lg p-6">

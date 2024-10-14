@@ -54,7 +54,7 @@ const DashboardNavbar = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard/splitBill" className="p-3">
+                <Link href="/dashboard/splitbill" className="p-3">
                   Split Bill
                 </Link>
               </li>
@@ -84,13 +84,13 @@ const DashboardNavbar = () => {
         <ul className="menu bg-base-200 min-h-full w-80 p-4">
           {/* Sidebar content here */}
           <li>
-            <Link href="/addBill">Add Bill</Link>
+            <Link href="/dashboard/addbill">Add Bill</Link>
           </li>
           <li>
-            <Link href="/splitBill">Split Bill</Link>
+            <Link href="/dashboard/splitbill">Split Bill</Link>
           </li>
           <li>
-            <Link href="/friends">Friends</Link>
+            <Link href="/dashboard/friends">Friends</Link>
           </li>
           <li>
             <a onClick={logout}>Logout</a>
