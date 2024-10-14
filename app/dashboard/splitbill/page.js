@@ -92,8 +92,11 @@ const SplitBill = () => {
   // Handle search input change and fetch suggestions
   const handleSearchChange = (e) => {
     setError("");
+    if (e.target.value.length < 2) {
+      setSuggestedFriends([]);
+    }
     setNewFriend(e.target.value);
-    fetchSuggestions(e.target.value);
+    fetchSuggestions(e.target.value); // Fetch friend suggestions when typing
   };
 
   // Handle amount change for each friend
@@ -152,7 +155,7 @@ const SplitBill = () => {
               onChange={(e) => setBillName(e.target.value)}
             />
           </div>
-          <div className="form-control mb-4">
+          <div className="form-control mb-4 fle">
             <label className="label font-semibold">Total Amount</label>
             <input
               type="number"
@@ -161,10 +164,14 @@ const SplitBill = () => {
               value={totalAmount}
               min="0"
               onChange={(e) => setTotalAmount(e.target.value)}
+              style={{
+                WebkitAppearance: "none" /* Chrome, Safari, Edge */,
+                MozAppearance: "textfield" /* Firefox */,
+              }}
             />
           </div>
           <label className="label font-semibold">Search Participants</label>
-          <div className="form-control mb-4 flex gap-2">
+          <div className="form-control mb-4 flex flex-row gap-2 items-center">
             <input
               type="text"
               placeholder="Enter friend's name"
@@ -172,8 +179,26 @@ const SplitBill = () => {
               value={newFriend}
               onChange={handleSearchChange}
             />
-            <button className="btn btn-outline" onClick={handleAddFriendClick}>
-              Add Participant
+            <button
+              className="btn btn-outline group"
+              onClick={handleAddFriendClick}
+            >
+              <svg
+                className="h-6 w-6 text-slate-900 group-hover:text-white transition duration-200"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" />
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span className="text-lg">Add</span>
             </button>
           </div>
           {error && (
@@ -195,12 +220,12 @@ const SplitBill = () => {
             </div>
           )}
           {suggestedFriends.length > 0 && (
-            <div className="form-control mb-4">
-              <ul className="dropdown-content p-2 shadow bg-white rounded-box w-full">
+            <div className="bg-white shadow-md rounded-md">
+              <ul className="divide-y divide-gray-200">
                 {suggestedFriends.map((friend) => (
                   <li
                     key={friend.user_id}
-                    className="p-2 hover:bg-gray-200 cursor-pointer"
+                    className="px-4 py-2 hover:bg-gray-50 cursor-pointer"
                     onClick={() => handleAddFriend(friend.username)}
                   >
                     {friend.username}
@@ -213,24 +238,29 @@ const SplitBill = () => {
             <div className="form-control mb-4">
               <label className="label font-semibold">Participants</label>
               {friends.map((friend, index) => (
-                <div key={index} className="flex gap-4 mb-2 items-center">
+                <div key={index} className="flex gap-2 mb-2 items-center">
+                  {/* Friend name input */}
                   <input
                     type="text"
-                    className="input input-bordered w-full"
+                    className="input input-bordered flex-grow-[15]" // Flex-grow higher to occupy more space
                     value={friend.name}
                     readOnly
                   />
+
+                  {/* Amount input */}
                   <input
                     type="number"
                     placeholder="Amount"
-                    className="input input-bordered w-full"
+                    className="input input-bordered flex-grow"
                     value={friend.amount}
                     min="0"
                     onChange={(e) => handleFriendAmountChange(index, e)}
                   />
+
+                  {/* Remove button */}
                   <button
                     onClick={() => handleRemoveFriend(index)}
-                    className="btn btn-outline btn-error"
+                    className="btn btn-outline btn-error flex-none" // Flex-none to maintain size
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
