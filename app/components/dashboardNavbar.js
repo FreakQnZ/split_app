@@ -54,7 +54,7 @@ const DashboardNavbar = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/splitBill" className="p-3">
+                <Link href="/dashboard/splitBill" className="p-3">
                   Split Bill
                 </Link>
               </li>
