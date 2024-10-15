@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import BillCard from "@/app/components/ui/bill_card";
 
 const AddBill = () => {
 
@@ -10,8 +11,27 @@ const AddBill = () => {
     const [amount, setAmount] = useState(0)
     const [message, setMessage] = useState("")
     const [isAlertVisible, setIsAlertVisible] = useState(false);
-
+    const [bills, setBills] = useState([])
     const userName = localStorage.getItem("username");
+
+    const fetchBills = async () => {
+        const res = await fetch(`/api/bill?user=${userName}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        const data = await res.json();
+        console.log(data)
+        if (data?.success) {
+            console.log("bills", data?.bills);
+            setBills(data?.bills);
+        }
+    }
+
+    useEffect (() => {
+        fetchBills();
+    }, [])
 
     const showMessage = (message) => {
         setMessage(message);
@@ -36,6 +56,7 @@ const AddBill = () => {
         const data = await res.json();
         if (data?.success) {
             showMessage(data?.message)
+            fetchBills();
         } else {
             showMessage(data?.message);
         }
@@ -44,18 +65,24 @@ const AddBill = () => {
 
     return (
         <div className="min-h-screen bg-gray-100 flex justify-center items-center p-4">
-            {/* Main section with form and participants */}
             <div
                 className="flex flex-col-reverse lg:flex-row gap-6 w-full"
                 style={{ height: "calc(100vh - 64px)" }}
             >
-                {/* Left section (Form area) */}
-                <div className="flex-1 bg-white shadow-lg rounded-lg p-6">
-                    {/* This is where the form content will go */}
-                </div>
+                <div className="flex-1 bg-white shadow-lg rounded-lg p-6 overflow-scroll">
+                    <div className=" grid grid-cols-1 md:grid-cols-3 gap-2 w-full justify-between justify-items-center ">
+                    {bills.map((bill) => (
+                        <BillCard
+                            key={bill?.bill_id}
+                            BillName={bill?.bill_name}
+                            amount={bill?.amount}
+                            createdAt={bill?.created_at}
+                        />
+                        ))}
 
-                {/* Right section (Friends List) */}
-                <div className="w-full lg:w-1/4 bg-white shadow-lg rounded-lg p-6 flex justify-center">
+                    </div>
+                </div>
+                <div className="w-full lg:w-1/4 bg-white shadow-lg rounded-lg p-6 flex flex-col items-center">
                     <div className="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl h-96">
                         <h1 className="card-title flex justify-center pt-5 text-2xl font-bold">Add New Bill</h1>
                         <div className="card-body pt-3">
