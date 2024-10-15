@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import withAuth from "@/app/utils/withAuth";
+import { useSearchParams, useRouter } from "next/navigation";
 
 const SplitBill = () => {
   const [friends, setFriends] = useState([]);
@@ -13,6 +14,10 @@ const SplitBill = () => {
 
   const currentUser = localStorage.getItem("username");
 
+  const searchParams = useSearchParams();
+  const billId = searchParams.get("id");
+  const router = useRouter();
+
   useEffect(() => {
     if (error) {
       const timeout = setTimeout(() => {
@@ -22,6 +27,35 @@ const SplitBill = () => {
       return () => clearTimeout(timeout);
     }
   }, [error]);
+
+  // Fetch bill details from backend using billId
+
+  //   useEffect(() => {
+  //     if (!billId) {
+  //       router.push("/bills");
+  //       return;
+  //     }
+  //     const fetchBill = async () => {
+  //       try {
+  //         const response = await fetch(`/api/getBillDetails?billId=${billId}`);
+  //         const data = await response.json();
+  //         if (data.success) {
+  //           setBillName(data.billName);
+  //           setTotalAmount(data.totalAmount);
+  //         } else {
+  //           setError("Failed to fetch bill details.");
+  //           router.push("/bills");
+  //         }
+  //       } catch (error) {
+  //         console.error("Error fetching bill:", error);
+  //         setError("An error occurred while fetching bill details.");
+  //         router.push("/bills");
+  //       }
+  //     };
+  //     if (billId) {
+  //       fetchBill();
+  //     }
+  //   }, [billId, router]);
 
   // Handle adding a new friend
   const handleAddFriend = async (newParticipant) => {
@@ -152,10 +186,10 @@ const SplitBill = () => {
               placeholder="Enter bill name"
               className="input input-bordered"
               value={billName}
-              onChange={(e) => setBillName(e.target.value)}
+              readOnly // Make the input non-editable
             />
           </div>
-          <div className="form-control mb-4 fle">
+          <div className="form-control mb-4">
             <label className="label font-semibold">Total Amount</label>
             <input
               type="number"
@@ -163,7 +197,7 @@ const SplitBill = () => {
               className="input input-bordered"
               value={totalAmount}
               min="0"
-              onChange={(e) => setTotalAmount(e.target.value)}
+              readOnly // Make the input non-editable
               style={{
                 WebkitAppearance: "none" /* Chrome, Safari, Edge */,
                 MozAppearance: "textfield" /* Firefox */,
