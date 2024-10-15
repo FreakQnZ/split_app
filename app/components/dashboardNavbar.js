@@ -49,13 +49,8 @@ const DashboardNavbar = () => {
             <ul className="menu menu-horizontal gap-4">
               {/* Navbar menu content here */}
               <li>
-                <Link href="/dashboard/addbill" className="p-3">
-                  Add Bill
-                </Link>
-              </li>
-              <li>
-                <Link href="/dashboard/splitbill" className="p-3">
-                  Split Bill
+                <Link href="/dashboard/bills" className="p-3">
+                  Bills
                 </Link>
               </li>
               <li>
@@ -82,12 +77,8 @@ const DashboardNavbar = () => {
           className="drawer-overlay"
         ></label>
         <ul className="menu bg-base-200 min-h-full w-80 p-4">
-          {/* Sidebar content here */}
           <li>
-            <Link href="/dashboard/addbill">Add Bill</Link>
-          </li>
-          <li>
-            <Link href="/dashboard/splitbill">Split Bill</Link>
+            <Link href="/dashboard/bills">Bills</Link>
           </li>
           <li>
             <Link href="/dashboard/friends">Friends</Link>
