@@ -174,12 +174,20 @@ const SplitBill = () => {
     setFriends(updatedFriends);
   };
 
+//   const handleRemoveFriend = (index) => {
+//     const removedFriendId = friends[index].id;
+//     console.log(removedFriendId);
+//     const updatedFriends = friends.filter((_, i) => i !== index);
+//     setFriends(updatedFriends);
+//     setRemovedParticipantIds((prev) => [...prev, removedFriendId]);
+//   };
   const handleRemoveFriend = (index) => {
-    const removedFriendId = friends[index].id;
-    console.log(removedFriendId);
     const updatedFriends = friends.filter((_, i) => i !== index);
     setFriends(updatedFriends);
-    setRemovedParticipantIds((prev) => [...prev, removedFriendId]);
+    if (isEditing) {
+      const removedFriendId = friends[index].id;
+      setRemovedParticipantIds((prev) => [...prev, removedFriendId]);
+    }
   };
 
   const handleAddFriendClick = () => {
@@ -218,6 +226,12 @@ const SplitBill = () => {
 
     if (!isEditing && amounts.some((amount) => amount <= 0)) {
       setError("Please ensure all participants have a valid amount.");
+      return;
+    }
+
+    const billAmount = amounts.reduce((sum, amount) => sum + amount, 0);
+    if (billAmount > totalAmount) {  // Assuming `billAmount` is the actual bill amount
+      setError("The total amount allocated to participants exceeds the bill amount.");
       return;
     }
 

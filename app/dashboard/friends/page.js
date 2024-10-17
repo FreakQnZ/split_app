@@ -125,7 +125,7 @@ const Friends = () => {
           <h2 className="text-lg font-semibold mb-4">List Of Friends</h2>
           {loadingFriends ? (
             <main className="flex flex-col m-8 w-full ">
-              <section className="card bg-base-200 w-full shadow-xl gap-5 p-4">
+              <section className="card bg-base-200  w-10/12 shadow-xl gap-5 p-4">
                 {/* <div className="skeleton h-32 w-full"></div> */}
                 <div className="skeleton h-4 w-28"></div>
                 <div className="skeleton h-4 w-full"></div>
