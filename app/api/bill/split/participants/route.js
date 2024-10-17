@@ -23,6 +23,7 @@ export async function GET(req) {
     return NextResponse.json({
       success: true,
       message: "Bill has been split",
+      data: res.rows,
     });
   } catch (error) {
     return NextResponse.json({

@@ -209,7 +209,7 @@ const SplitBill = () => {
         setIsModalOpen(true);
         setFriends([]);
         setTimeout(() => {
-            router.push("/dashboard/bills");
+          router.push("/dashboard/bills");
         }, 2000);
       } else {
         setError(data.message || "Failed to split the bill.");
@@ -347,7 +347,10 @@ const SplitBill = () => {
                   />
 
                   {/* Remove button */}
-                  <button className="btn btn-square btn-outline">
+                  <button
+                    className="btn btn-square btn-outline"
+                    onClick={() => handleRemoveFriend(index)}
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-6 w-6"
@@ -389,11 +392,10 @@ const SplitBill = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white w-11/12 max-w-lg mx-auto p-8 rounded-lg shadow-lg relative">
-
-            <h2 className="text-2xl font-semibold mb-4">Bill Successfully Split</h2>
-            <p className="text-gray-600">
-              Redirecting ...
-            </p>
+            <h2 className="text-2xl font-semibold mb-4">
+              Bill Successfully Split
+            </h2>
+            <p className="text-gray-600">Redirecting ...</p>
           </div>
         </div>
       )}

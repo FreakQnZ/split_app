@@ -31,6 +31,7 @@ const BillCard = ({ BillName, amount, createdAt, billId, fetchData }) => {
       },
     });
     const data = await res.json();
+    console.log(data);
     return data.success === true;
   };
 
