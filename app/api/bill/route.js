@@ -5,12 +5,8 @@ export async function POST(req) {
   const { billName, amount, userName } = await req.json();
   console.log(billName, amount, userName);
   try {
-    console.log("In try");
     const query1 = `SELECT user_id FROM users WHERE username = $1`;
-    console.log("After q1");
     const currentUserQuery = await pool.query(query1, [userName]);
-    console.log("after q1 exec");
-    console.log(currentUserQuery);
     if (currentUserQuery.rowCount === 0) {
       return NextResponse.json({
         success: false,

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import withAuth from "@/app/utils/withAuth";
 import { useSearchParams, useRouter } from "next/navigation";
 
+// /dashboard/bills/splitbill/page.js
 const SplitBill = () => {
   const [friends, setFriends] = useState([]);
   const [newFriend, setNewFriend] = useState("");
@@ -14,6 +15,8 @@ const SplitBill = () => {
   const [isBillLoading, setIsBillLoading] = useState(true); // New state for loading bill details
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [split, setSplit] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [removedParticipantIds, setRemovedParticipantIds] = useState([]);
 
   const currentUser = localStorage.getItem("username");
 
@@ -56,6 +59,7 @@ const SplitBill = () => {
 
           if (splitData.success && splitData.data.length > 0) {
             const retrievedFriends = splitData.data.map((participant) => ({
+              id: participant.id,
               name: participant.username,
               amount: participant.amount_owed,
               settled: participant.settled,
@@ -171,8 +175,11 @@ const SplitBill = () => {
   };
 
   const handleRemoveFriend = (index) => {
+    const removedFriendId = friends[index].id;
+    console.log(removedFriendId);
     const updatedFriends = friends.filter((_, i) => i !== index);
     setFriends(updatedFriends);
+    setRemovedParticipantIds((prev) => [...prev, removedFriendId]);
   };
 
   const handleAddFriendClick = () => {
@@ -196,39 +203,68 @@ const SplitBill = () => {
 
   // Function to handle submission (e.g., send data to a server)
   const handleSubmit = async () => {
-    if (!billId || !friends.length) {
-      setError("Please add at least one participant and enter amount.");
+    // Remove the check for friends.length when isEditing is true
+    if (!billId) {
+      setError("Please enter a valid bill ID.");
       return;
     }
+    if (!isEditing && friends.length === 0) {
+      setError("Please add at least one participant.");
+      return;
+    }
+
     const amounts = friends.map((friend) => parseFloat(friend.amount) || 0); // Parse amounts to float, default to 0 if invalid
     const participants = friends.map((friend) => friend.name);
 
-    if (amounts.some((amount) => amount <= 0)) {
+    if (!isEditing && amounts.some((amount) => amount <= 0)) {
       setError("Please ensure all participants have a valid amount.");
       return;
     }
+
     try {
-      const response = await fetch("/api/bill/split", {
-        method: "POST",
+      const url = !isEditing ? `/api/bill/split` : `/api/bill/split/update`;
+      const type = !isEditing ? "POST" : "PATCH";
+      let requestBody = {
+        billNo: billId,
+        amounts, // current amounts for participants
+        participants, // usernames or user IDs of current participants
+      };
+      const deleteAllParticipants = friends.length === 0;
+      if (isEditing) {
+        requestBody = {
+          ...requestBody,
+          removedParticipantIds,
+          deleteAllParticipants,
+        };
+      }
+
+      const response = await fetch(url, {
+        method: type,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          billNo: billId,
-          amounts: amounts,
-          participants: participants,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        // setError("SUCCESSS");
-        setIsModalOpen(true);
-        setFriends([]);
-        setTimeout(() => {
-          router.push("/dashboard/bills");
-        }, 2000);
+        if (!isEditing) {
+          setIsModalOpen(true);
+          setFriends([]);
+          setTimeout(() => {
+            router.push("/dashboard/bills");
+          }, 2000);
+        } else {
+          if (deleteAllParticipants) {
+            setIsModalOpen(true);
+            setFriends([]);
+            setTimeout(() => {
+              router.push("/dashboard/bills");
+            }, 2000);
+          }
+          setSplit(true);
+        }
       } else {
         setError(data.message || "Failed to split the bill.");
       }
@@ -245,6 +281,7 @@ const SplitBill = () => {
       </div>
     );
   }
+  // Inside your SplitBill component
 
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center items-center p-4">
@@ -277,6 +314,8 @@ const SplitBill = () => {
               }}
             />
           </div>
+
+          {/* Search Participants Section */}
           {!split && (
             <div>
               <label className="label font-semibold">Search Participants</label>
@@ -312,6 +351,8 @@ const SplitBill = () => {
               </div>
             </div>
           )}
+
+          {/* Error Display */}
           {error && (
             <div role="alert" className="alert alert-error mt-4">
               <svg
@@ -330,6 +371,8 @@ const SplitBill = () => {
               <span>{error}</span>
             </div>
           )}
+
+          {/* Suggested Friends */}
           {suggestedFriends.length > 0 && !split && (
             <div className="bg-white shadow-md rounded-md">
               <ul className="divide-y divide-gray-200">
@@ -345,35 +388,32 @@ const SplitBill = () => {
               </ul>
             </div>
           )}
+
+          {/* Participants Section */}
           {friends.length > 0 && (
             <div className="form-control mb-4">
               <label className="label font-semibold">Participants</label>
               {friends.map((friend, index) => (
                 <div key={index} className="flex gap-2 mb-2 items-center">
-                  {/* Friend name input */}
                   <input
                     type="text"
                     className={`input input-bordered ${
                       split ? "w-[70%]" : "w-[60%]"
-                    }`} // Adjusted width based on split state
+                    }`}
                     value={friend.name}
-                    readOnly={split} // Make the input non-editable if the bill has been split
+                    readOnly={split}
                   />
-
-                  {/* Amount input */}
                   <input
                     type="number"
                     placeholder="Amount"
                     className={`input input-bordered ${
                       split ? "w-[30%]" : "w-[30%]"
-                    }`} // Adjusted width based on split state
+                    }`}
                     value={friend.amount}
                     min="0"
                     onChange={(e) => handleFriendAmountChange(index, e)}
-                    readOnly={split} // Make the input non-editable if the bill has been split
+                    readOnly={split}
                   />
-
-                  {/* Remove button (hide if split is true) */}
                   {!split && (
                     <button
                       className="btn btn-square btn-outline"
@@ -399,31 +439,77 @@ const SplitBill = () => {
               ))}
             </div>
           )}
-          {/* Button to split the amount equally */}
-          {friends.length > 0 && !split && (
+
+          {/* Conditional Rendering for Buttons */}
+          {split ? (
+            // When in split state
             <div className="flex justify-between mb-4">
               <button
                 className="btn w-1/2 bg-black text-white text-base hover:bg-white hover:text-black border-black hover:border-black mr-2"
-                onClick={handleSplitEqually}
+                onClick={() => (setIsEditing(true), setSplit(false))}
               >
-                Split Equally
+                Edit
               </button>
               <button
-                className="btn w-1/2 bg-black text-white text-base hover:bg-white hover:text-black border-black hover:border-black "
+                className="btn w-1/2 bg-black text-white text-base hover:bg-white hover:text-black border-black hover:border-black"
+                onClick={() => router.push("/dashboard/bills")}
+              >
+                Return To Bills
+              </button>
+            </div>
+          ) : isEditing ? (
+            // When editing
+            <div className="flex justify-between mb-4">
+              {friends.length === 0 ? (
+                <button
+                  className="btn w-full bg-black text-white text-base hover:bg-white hover:text-black border-black hover:border-black"
+                  onClick={handleSubmit}
+                >
+                  Submit
+                </button>
+              ) : (
+                <>
+                  <button
+                    className="btn w-1/2 bg-black text-white text-base hover:bg-white hover:text-black border-black hover:border-black mr-2"
+                    onClick={handleSplitEqually}
+                  >
+                    Split Equally
+                  </button>
+                  <button
+                    className="btn w-1/2 bg-black text-white text-base hover:bg-white hover:text-black border-black hover:border-black"
+                    onClick={handleSubmit}
+                  >
+                    Submit
+                  </button>
+                </>
+              )}
+            </div>
+          ) : // When not editing and not in split state
+          friends.length === 0 ? (
+            <div className="flex justify-between mb-4">
+              <button
+                className="btn w-full bg-black text-white text-base hover:bg-white hover:text-black border-black hover:border-black"
                 onClick={handleSubmit}
               >
                 Submit
               </button>
             </div>
-          )}
-          {split && (
+          ) : (
             <div className="flex justify-between mb-4">
-              <button
-                className="btn w-full bg-black text-white text-base hover:bg-white hover:text-black border-black hover:border-black mr-2"
-                onClick={() => router.push("/dashboard/bills")}
-              >
-                Return to Bills
-              </button>
+              <>
+                <button
+                  className="btn w-1/2 bg-black text-white text-base hover:bg-white hover:text-black border-black hover:border-black mr-2"
+                  onClick={handleSplitEqually}
+                >
+                  Split Equally
+                </button>
+                <button
+                  className="btn w-1/2 bg-black text-white text-base hover:bg-white hover:text-black border-black hover:border-black"
+                  onClick={handleSubmit}
+                >
+                  Submit
+                </button>
+              </>
             </div>
           )}
         </div>

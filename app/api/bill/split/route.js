@@ -2,6 +2,8 @@ import React from "react";
 import pool from "@/app/utils/connectDB";
 import { NextResponse } from "next/server";
 
+// /api/bill/split
+
 export async function POST(req) {
   const { billNo, amounts, participants } = await req.json();
 

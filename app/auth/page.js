@@ -40,14 +40,14 @@ const Login = () => {
     };
     checkAuth();
     const handleKeyDown = (event) => {
-        if (event.key === 'Enter') {
-          document.getElementById('submitButton').click();
-        }
+      if (event.key === "Enter") {
+        document.getElementById("submitButton").click();
       }
-      window.addEventListener('keydown', handleKeyDown);
-      return () => {
-        window.removeEventListener('keydown', handleKeyDown);
-      };
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   const [username, setUsername] = useState("");
@@ -119,7 +119,6 @@ const Login = () => {
         });
 
         const data = await res.json();
-        console.log(data);
 
         if (data?.message?.constraint == "users_email_key") {
           showAlert("E-Mail already exists");
@@ -130,7 +129,6 @@ const Login = () => {
           setLoading(false);
           return;
         } else if (data?.message == "Success") {
-          console.log(data);
           localStorage.setItem("token", data.token);
           setLoading(false);
           localStorage.setItem("username", username);
@@ -298,7 +296,11 @@ const Login = () => {
               />
             </label>
           )}
-          <button id="submitButton" onClick={handleSubmit} className="btn btn-primary w-full">
+          <button
+            id="submitButton"
+            onClick={handleSubmit}
+            className="btn btn-primary w-full"
+          >
             {loading && (
               <span className=" absolute right-8 loading loading-spinner"></span>
             )}

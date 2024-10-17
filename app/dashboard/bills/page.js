@@ -33,7 +33,7 @@ const AddBill = () => {
     fetchBills();
     setTimeout(() => {
       setBillLoading(false);
-    }, 500);
+    }, 1000);
   }, []);
 
   const showMessage = (message) => {

@@ -1,6 +1,7 @@
 import pool from "@/app/utils/connectDB";
 import { NextResponse } from "next/server";
 
+// /api/split/bill/participants
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const billId = searchParams.get("billId");
@@ -9,6 +10,7 @@ export async function GET(req) {
     // Join the bill_participants and users tables to fetch user_name along with other data
     const query = `
       SELECT 
+        bill_participants.id,
         bill_participants.user_id, 
         users.username, 
         bill_participants.amount_owed, 

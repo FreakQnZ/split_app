@@ -25,7 +25,6 @@ const Friends = () => {
       });
       const data = await res.json();
       if (data?.success) {
-        console.log("Friend added successfully:", data);
         // After adding a friend, fetch the updated list of friends
         fetchFriends();
         setError("");
@@ -165,7 +164,11 @@ const Friends = () => {
                     //   </button>
                     // </li>
 
-                        <Avatar username={friend.username} DeleteFriend={handleDeleteFriend} currentUser={currentUser} />
+                    <Avatar
+                      username={friend.username}
+                      DeleteFriend={handleDeleteFriend}
+                      currentUser={currentUser}
+                    />
                   ))}
               </main>
               {friends.length === 0 && (
@@ -290,9 +293,9 @@ const Friends = () => {
             />
           </div>
           <button className="btn btn-primary w-full" onClick={handleAddFriend}>
-          {btnloading && (
-                                        <span className=" absolute right-12 loading loading-spinner"></span>
-                                    )}
+            {btnloading && (
+              <span className=" absolute right-12 loading loading-spinner"></span>
+            )}
             Add
           </button>
           {error && (
