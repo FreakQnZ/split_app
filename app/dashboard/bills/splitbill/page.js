@@ -11,11 +11,12 @@ const SplitBill = () => {
   const [totalAmount, setTotalAmount] = useState("");
   const [suggestedFriends, setSuggestedFriends] = useState([]);
   const [error, setError] = useState("");
+  const [isBillLoading, setIsBillLoading] = useState(true); // New state for loading bill details
 
   const currentUser = localStorage.getItem("username");
 
   const searchParams = useSearchParams();
-  const billId = searchParams.get("id");
+  const billId = searchParams.get("billid");
   const router = useRouter();
 
   useEffect(() => {
@@ -30,37 +31,46 @@ const SplitBill = () => {
 
   // Fetch bill details from backend using billId
 
-  //   useEffect(() => {
-  //     if (!billId) {
-  //       router.push("/bills");
-  //       return;
-  //     }
-  //     const fetchBill = async () => {
-  //       try {
-  //         const response = await fetch(`/api/getBillDetails?billId=${billId}`);
-  //         const data = await response.json();
-  //         if (data.success) {
-  //           setBillName(data.billName);
-  //           setTotalAmount(data.totalAmount);
-  //         } else {
-  //           setError("Failed to fetch bill details.");
-  //           router.push("/bills");
-  //         }
-  //       } catch (error) {
-  //         console.error("Error fetching bill:", error);
-  //         setError("An error occurred while fetching bill details.");
-  //         router.push("/bills");
-  //       }
-  //     };
-  //     if (billId) {
-  //       fetchBill();
-  //     }
-  //   }, [billId, router]);
+  useEffect(() => {
+    if (!billId) {
+      router.push("/bills");
+      return;
+    }
+    const fetchBill = async () => {
+      try {
+        const response = await fetch(`/api/bill/info?billId=${billId}`);
+        const data = await response.json();
+        console.log(data);
+        if (data.success) {
+          setBillName(data.bill.bill_name);
+          setTotalAmount(data.bill.amount);
+        } else {
+          setError("Failed to fetch bill details.");
+          router.push("/dashboard/bills");
+        }
+      } catch (error) {
+        console.error("Error fetching bill:", error);
+        setError("An error occurred while fetching bill details.");
+        router.push("/dashboard/bills");
+      } finally {
+        // Set loading to false only after the fetch is completed, either success or failure
+        setIsBillLoading(false);
+      }
+    };
+    if (billId) {
+      fetchBill();
+    }
+  }, [billId, router]);
 
   // Handle adding a new friend
   const handleAddFriend = async (newParticipant) => {
     if (typeof newParticipant !== "string" || !newParticipant.trim()) {
       setError("Please enter a valid friend's username.");
+      setSuggestedFriends([]);
+      return;
+    }
+    if (newParticipant === currentUser) {
+      setError("You cannot add yourself as a participant.");
       setSuggestedFriends([]);
       return;
     }
@@ -152,7 +162,7 @@ const SplitBill = () => {
 
   // Function to split amount equally among participants
   const handleSplitEqually = () => {
-    const numParticipants = friends.length;
+    const numParticipants = friends.length + 1;
     const amountPerParticipant =
       numParticipants > 0
         ? (parseFloat(totalAmount) / numParticipants).toFixed(2)
@@ -166,10 +176,52 @@ const SplitBill = () => {
   };
 
   // Function to handle submission (e.g., send data to a server)
-  const handleSubmit = () => {
-    // Implement submission logic here (e.g., sending the data to your backend)
-    console.log("Submitting data:", { billName, totalAmount, friends });
+  const handleSubmit = async () => {
+    if (!billId || !friends.length) {
+      setError("Please add at least one participant and enter amount.");
+      return;
+    }
+    const amounts = friends.map((friend) => parseFloat(friend.amount) || 0); // Parse amounts to float, default to 0 if invalid
+    const participants = friends.map((friend) => friend.name);
+
+    if (amounts.some((amount) => amount <= 0)) {
+      setError("Please ensure all participants have a valid amount.");
+      return;
+    }
+    try {
+      const response = await fetch("/api/bill/split", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          billNo: billId,
+          amounts: amounts,
+          participants: participants,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setError("SUCCESSS");
+        setFriends([]);
+      } else {
+        setError(data.message || "Failed to split the bill.");
+      }
+    } catch (error) {
+      console.error("Error submitting bill split:", error);
+      setError("An unexpected error occurred while submitting the bill.");
+    }
   };
+
+  if (isBillLoading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center items-center p-4">
@@ -177,13 +229,12 @@ const SplitBill = () => {
         className="flex flex-col lg:flex-row gap-6 w-full max-w-4xl"
         style={{ height: "calc(100vh - 64px)" }}
       >
-        <div className="flex-1 bg-white shadow-lg rounded-lg p-6">
-          <h2 className="text-2xl font-bold mb-4">Split Bill</h2>
+        <div className="flex-1 bg-white shadow-lg rounded-lg p-10">
+          <h2 className="text-2xl font-bold mb-4 text-center">Split Bill</h2>
           <div className="form-control mb-4">
             <label className="label font-semibold">Bill Name</label>
             <input
               type="text"
-              placeholder="Enter bill name"
               className="input input-bordered"
               value={billName}
               readOnly // Make the input non-editable
@@ -193,7 +244,6 @@ const SplitBill = () => {
             <label className="label font-semibold">Total Amount</label>
             <input
               type="number"
-              placeholder="Enter total amount"
               className="input input-bordered"
               value={totalAmount}
               min="0"
@@ -276,7 +326,7 @@ const SplitBill = () => {
                   {/* Friend name input */}
                   <input
                     type="text"
-                    className="input input-bordered flex-grow-[15]" // Flex-grow higher to occupy more space
+                    className="input input-bordered w-[60%]" // Adjust width as needed
                     value={friend.name}
                     readOnly
                   />
@@ -285,17 +335,14 @@ const SplitBill = () => {
                   <input
                     type="number"
                     placeholder="Amount"
-                    className="input input-bordered flex-grow"
+                    className="input input-bordered w-[30%]" // Adjust width as needed
                     value={friend.amount}
                     min="0"
                     onChange={(e) => handleFriendAmountChange(index, e)}
                   />
 
                   {/* Remove button */}
-                  <button
-                    onClick={() => handleRemoveFriend(index)}
-                    className="btn btn-outline btn-error flex-none" // Flex-none to maintain size
-                  >
+                  <button className="btn btn-square btn-outline">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-6 w-6"
@@ -318,10 +365,16 @@ const SplitBill = () => {
           {/* Button to split the amount equally */}
           {friends.length > 0 && (
             <div className="flex justify-between mb-4">
-              <button className="btn btn-primary" onClick={handleSplitEqually}>
+              <button
+                className="btn w-1/2 bg-black text-white text-base hover:bg-white hover:text-black border-black hover:border-black mr-2"
+                onClick={handleSplitEqually}
+              >
                 Split Equally
               </button>
-              <button className="btn btn-success" onClick={handleSubmit}>
+              <button
+                className="btn w-1/2 bg-black text-white text-base hover:bg-white hover:text-black border-black hover:border-black "
+                onClick={handleSubmit}
+              >
                 Submit
               </button>
             </div>
