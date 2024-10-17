@@ -122,11 +122,11 @@ const Friends = () => {
         className="flex flex-col-reverse lg:flex-row gap-6 w-full"
         style={{ height: "calc(100vh - 64px)" }}
       >
-        <div className="flex-1 bg-white shadow-lg rounded-lg p-6">
+        <div className="flex-1 bg-white shadow-lg rounded-lg p-6 overflow-scroll">
           <h2 className="text-lg font-semibold mb-4">List Of Friends</h2>
           {loadingFriends ? (
-            <main className="flex flex-col m-8">
-              <section className="card bg-base-200 w-96 shadow-xl gap-5 p-4">
+            <main className="flex flex-col m-8 w-full ">
+              <section className="card bg-base-200 w-full shadow-xl gap-5 p-4">
                 {/* <div className="skeleton h-32 w-full"></div> */}
                 <div className="skeleton h-4 w-28"></div>
                 <div className="skeleton h-4 w-full"></div>
@@ -135,7 +135,7 @@ const Friends = () => {
             </main>
           ) : (
             <div>
-              <main className="grid grid-cols-3 gap-4 justify-center place-items-center">
+              <main className="grid md:grid-cols-4 grid-cols-2 gap-4 justify-center place-items-center">
                 {friends.length > 0 &&
                   friends.map((friend, index) => (
                     // <li
