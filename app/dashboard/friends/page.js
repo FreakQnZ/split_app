@@ -116,10 +116,10 @@ const Friends = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center items-center p-4">
+    <div className=" bg-gray-100 flex justify-center items-center p-4">
       <div
         className="flex flex-col-reverse lg:flex-row gap-6 w-full"
-        style={{ height: "calc(100vh - 64px)" }}
+        style={{ height: "86vh" }}
       >
         <div className="flex-1 bg-white shadow-lg rounded-lg p-6 overflow-scroll">
           <h2 className="text-lg font-semibold mb-4">List Of Friends</h2>
