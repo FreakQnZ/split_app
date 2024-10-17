@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import withAuth from "@/app/utils/withAuth";
+import Avatar from "@/app/components/ui/avatar_friend";
 
 const Friends = () => {
   const [friendUsername, setFriendUsername] = useState("");
@@ -8,10 +9,12 @@ const Friends = () => {
   const [error, setError] = useState(""); // State to store error messages
   const [loadingFriends, setLoadingFriends] = useState(true);
   const currentUser = localStorage.getItem("username");
+  const [btnloading, setBtnLoading] = useState(false);
 
   const inputRef = useRef(null);
   // Function to add a friend
   const addFriend = async (user1, user2) => {
+    setBtnLoading(true);
     try {
       const res = await fetch("/api/friends", {
         method: "POST",
@@ -27,21 +30,25 @@ const Friends = () => {
         fetchFriends();
         setError("");
         setFriendUsername("");
+        setBtnLoading(false);
       } else {
         setError(data?.message || "Error adding friend."); // Set error message from backend
         console.log("Error adding friend:", data.message);
         if (inputRef.current) {
           inputRef.current.focus(); // Focus the input if there's an error
         }
+        setBtnLoading(false);
       }
     } catch (error) {
       console.error("Error:", error);
+      setBtnLoading(false);
       setError("An unexpected error occurred."); // Set generic error message
     }
   };
 
   // Function to fetch the friends list
   const getFriends = async (user) => {
+    setLoadingFriends(true);
     try {
       const res = await fetch(`/api/friends?user=${user}`, {
         method: "GET",
@@ -88,7 +95,7 @@ const Friends = () => {
       }
     }
   };
-  const handleDeleteFriend = async (friendUsername) => {
+  const handleDeleteFriend = async (friendUsername, currentUser) => {
     try {
       const res = await fetch("/api/friends", {
         method: "DELETE",
@@ -118,9 +125,9 @@ const Friends = () => {
         <div className="flex-1 bg-white shadow-lg rounded-lg p-6">
           <h2 className="text-lg font-semibold mb-4">List Of Friends</h2>
           {loadingFriends ? (
-            <main className="flex flex-col items-center m-8">
+            <main className="flex flex-col m-8">
               <section className="card bg-base-200 w-96 shadow-xl gap-5 p-4">
-                <div className="skeleton h-32 w-full"></div>
+                {/* <div className="skeleton h-32 w-full"></div> */}
                 <div className="skeleton h-4 w-28"></div>
                 <div className="skeleton h-4 w-full"></div>
                 <div className="skeleton h-4 w-full"></div>
@@ -128,37 +135,39 @@ const Friends = () => {
             </main>
           ) : (
             <div>
-              <ul>
+              <main className="grid grid-cols-3 gap-4 justify-center place-items-center">
                 {friends.length > 0 &&
                   friends.map((friend, index) => (
-                    <li
-                      key={index}
-                      className="flex justify-between items-center p-2 hover:bg-gray-100 rounded transition"
-                    >
-                      <span className="text-lg">{friend.username}</span>
-                      <button
-                        onClick={() => handleDeleteFriend(friend.username)} // Add your delete handler here
-                        className="btn btn-ghost btn-sm"
-                        aria-label="Delete friend"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-6 w-6"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
-                    </li>
+                    // <li
+                    //   key={index}
+                    //   className="flex justify-between items-center p-2 hover:bg-gray-100 rounded transition"
+                    // >
+                    //   <span className="text-lg">{friend.username}</span>
+                    //   <button
+                    //     onClick={() => handleDeleteFriend(friend.username)} // Add your delete handler here
+                    //     className="btn btn-ghost btn-sm"
+                    //     aria-label="Delete friend"
+                    //   >
+                    //     <svg
+                    //       xmlns="http://www.w3.org/2000/svg"
+                    //       className="h-6 w-6"
+                    //       fill="none"
+                    //       viewBox="0 0 24 24"
+                    //       stroke="currentColor"
+                    //     >
+                    //       <path
+                    //         strokeLinecap="round"
+                    //         strokeLinejoin="round"
+                    //         strokeWidth="2"
+                    //         d="M6 18L18 6M6 6l12 12"
+                    //       />
+                    //     </svg>
+                    //   </button>
+                    // </li>
+
+                        <Avatar username={friend.username} DeleteFriend={handleDeleteFriend} currentUser={currentUser} />
                   ))}
-              </ul>
+              </main>
               {friends.length === 0 && (
                 <div className="w-full flex items-center flex-wrap justify-center gap-10">
                   <div className="grid gap-4 w-60">
@@ -281,6 +290,9 @@ const Friends = () => {
             />
           </div>
           <button className="btn btn-primary w-full" onClick={handleAddFriend}>
+          {btnloading && (
+                                        <span className=" absolute right-12 loading loading-spinner"></span>
+                                    )}
             Add
           </button>
           {error && (

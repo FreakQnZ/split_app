@@ -47,7 +47,7 @@ export async function GET(req) {
       });
     }
 
-    const query2 = `SELECT * FROM bills WHERE user_id = $1`;
+    const query2 = `SELECT * FROM bills WHERE user_id = $1 order by created_at desc`;
     const res = await pool.query(query2, [currentUserQuery.rows[0].user_id]);
 
     if (!res) {
@@ -63,10 +63,10 @@ export async function DELETE(req) {
   const { searchParams } = new URL(req.url);
   const billId = searchParams.get("billId");
   const username = searchParams.get("user");
-
+  console.log(billId, username);
   try {
     const query = `SELECT user_id FROM users WHERE username = $1`;
-    const currentUserQuery = await pool.query(query1, [username]);
+    const currentUserQuery = await pool.query(query, [username]);
     if (currentUserQuery.rowCount === 0) {
       return NextResponse.json({
         success: false,
@@ -81,10 +81,13 @@ export async function DELETE(req) {
       return NextResponse.json({ success: false, error: "Bill not found." });
     }
     const query2 = `DELETE FROM bills WHERE bill_id = $1`;
+
     const res = await pool.query(query2, [billId]);
     if (!res) {
       return NextResponse.json({ success: false, error: "Bill not deleted." });
     }
     return NextResponse.json({ success: true, message: "Bill deleted." });
-  } catch (error) {}
+  } catch (error) {
+    return NextResponse.json({ success: false, error: error });
+  }
 }
