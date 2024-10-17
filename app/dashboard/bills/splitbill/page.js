@@ -12,6 +12,7 @@ const SplitBill = () => {
   const [suggestedFriends, setSuggestedFriends] = useState([]);
   const [error, setError] = useState("");
   const [isBillLoading, setIsBillLoading] = useState(true); // New state for loading bill details
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const currentUser = localStorage.getItem("username");
 
@@ -23,7 +24,7 @@ const SplitBill = () => {
     if (error) {
       const timeout = setTimeout(() => {
         setError("");
-      }, 10000);
+      }, 5000);
 
       return () => clearTimeout(timeout);
     }
@@ -204,8 +205,12 @@ const SplitBill = () => {
       const data = await response.json();
 
       if (data.success) {
-        setError("SUCCESSS");
+        // setError("SUCCESSS");
+        setIsModalOpen(true);
         setFriends([]);
+        setTimeout(() => {
+            router.push("/dashboard/bills");
+        }, 2000);
       } else {
         setError(data.message || "Failed to split the bill.");
       }
@@ -381,6 +386,17 @@ const SplitBill = () => {
           )}
         </div>
       </div>
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white w-11/12 max-w-lg mx-auto p-8 rounded-lg shadow-lg relative">
+
+            <h2 className="text-2xl font-semibold mb-4">Bill Successfully Split</h2>
+            <p className="text-gray-600">
+              Redirecting ...
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
