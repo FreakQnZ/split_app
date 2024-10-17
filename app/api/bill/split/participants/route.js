@@ -6,8 +6,19 @@ export async function GET(req) {
   const billId = searchParams.get("billId");
 
   try {
-    const query = `SELECT * FROM bill_participants WHERE bill_id = $1`;
+    // Join the bill_participants and users tables to fetch user_name along with other data
+    const query = `
+      SELECT 
+        bill_participants.user_id, 
+        users.username, 
+        bill_participants.amount_owed, 
+        bill_participants.settled 
+      FROM bill_participants
+      JOIN users ON bill_participants.user_id = users.user_id
+      WHERE bill_participants.bill_id = $1
+    `;
     const res = await pool.query(query, [billId]);
+    console.log("here");
     if (!res) {
       return NextResponse.json({
         success: false,
@@ -20,6 +31,7 @@ export async function GET(req) {
         message: "Bill has not been split",
       });
     }
+
     return NextResponse.json({
       success: true,
       message: "Bill has been split",
@@ -28,7 +40,7 @@ export async function GET(req) {
   } catch (error) {
     return NextResponse.json({
       success: false,
-      message: "Unexpected Error Occured",
+      message: error,
     });
   }
 }

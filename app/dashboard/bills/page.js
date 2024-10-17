@@ -22,7 +22,6 @@ const AddBill = () => {
       },
     });
     const data = await res.json();
-    console.log(data);
     if (data?.success) {
       console.log("bills", data?.bills);
       setBills(data?.bills);

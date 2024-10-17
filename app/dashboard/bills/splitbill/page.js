@@ -13,6 +13,7 @@ const SplitBill = () => {
   const [error, setError] = useState("");
   const [isBillLoading, setIsBillLoading] = useState(true); // New state for loading bill details
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [split, setSplit] = useState(false);
 
   const currentUser = localStorage.getItem("username");
 
@@ -37,14 +38,31 @@ const SplitBill = () => {
       router.push("/bills");
       return;
     }
+
     const fetchBill = async () => {
       try {
         const response = await fetch(`/api/bill/info?billId=${billId}`);
         const data = await response.json();
-        console.log(data);
+
         if (data.success) {
           setBillName(data.bill.bill_name);
           setTotalAmount(data.bill.amount);
+
+          // Check if the bill has already been split
+          const splitResponse = await fetch(
+            `/api/bill/split/participants?billId=${billId}`
+          );
+          const splitData = await splitResponse.json();
+
+          if (splitData.success && splitData.data.length > 0) {
+            const retrievedFriends = splitData.data.map((participant) => ({
+              name: participant.username,
+              amount: participant.amount_owed,
+              settled: participant.settled,
+            }));
+            setFriends(retrievedFriends);
+            setSplit(true);
+          }
         } else {
           setError("Failed to fetch bill details.");
           router.push("/dashboard/bills");
@@ -54,10 +72,10 @@ const SplitBill = () => {
         setError("An error occurred while fetching bill details.");
         router.push("/dashboard/bills");
       } finally {
-        // Set loading to false only after the fetch is completed, either success or failure
         setIsBillLoading(false);
       }
     };
+
     if (billId) {
       fetchBill();
     }
@@ -259,37 +277,41 @@ const SplitBill = () => {
               }}
             />
           </div>
-          <label className="label font-semibold">Search Participants</label>
-          <div className="form-control mb-4 flex flex-row gap-2 items-center">
-            <input
-              type="text"
-              placeholder="Enter friend's name"
-              className="input input-bordered flex-grow"
-              value={newFriend}
-              onChange={handleSearchChange}
-            />
-            <button
-              className="btn btn-outline group"
-              onClick={handleAddFriendClick}
-            >
-              <svg
-                className="h-6 w-6 text-slate-900 group-hover:text-white transition duration-200"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-                stroke="currentColor"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" />
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              <span className="text-lg">Add</span>
-            </button>
-          </div>
+          {!split && (
+            <div>
+              <label className="label font-semibold">Search Participants</label>
+              <div className="form-control mb-4 flex flex-row gap-2 items-center">
+                <input
+                  type="text"
+                  placeholder="Enter friend's name"
+                  className="input input-bordered flex-grow"
+                  value={newFriend}
+                  onChange={handleSearchChange}
+                />
+                <button
+                  className="btn btn-outline group"
+                  onClick={handleAddFriendClick}
+                >
+                  <svg
+                    className="h-6 w-6 text-slate-900 group-hover:text-white transition duration-200"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2"
+                    stroke="currentColor"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" />
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  <span className="text-lg">Add</span>
+                </button>
+              </div>
+            </div>
+          )}
           {error && (
             <div role="alert" className="alert alert-error mt-4">
               <svg
@@ -308,7 +330,7 @@ const SplitBill = () => {
               <span>{error}</span>
             </div>
           )}
-          {suggestedFriends.length > 0 && (
+          {suggestedFriends.length > 0 && !split && (
             <div className="bg-white shadow-md rounded-md">
               <ul className="divide-y divide-gray-200">
                 {suggestedFriends.map((friend) => (
@@ -331,47 +353,54 @@ const SplitBill = () => {
                   {/* Friend name input */}
                   <input
                     type="text"
-                    className="input input-bordered w-[60%]" // Adjust width as needed
+                    className={`input input-bordered ${
+                      split ? "w-[70%]" : "w-[60%]"
+                    }`} // Adjusted width based on split state
                     value={friend.name}
-                    readOnly
+                    readOnly={split} // Make the input non-editable if the bill has been split
                   />
 
                   {/* Amount input */}
                   <input
                     type="number"
                     placeholder="Amount"
-                    className="input input-bordered w-[30%]" // Adjust width as needed
+                    className={`input input-bordered ${
+                      split ? "w-[30%]" : "w-[30%]"
+                    }`} // Adjusted width based on split state
                     value={friend.amount}
                     min="0"
                     onChange={(e) => handleFriendAmountChange(index, e)}
+                    readOnly={split} // Make the input non-editable if the bill has been split
                   />
 
-                  {/* Remove button */}
-                  <button
-                    className="btn btn-square btn-outline"
-                    onClick={() => handleRemoveFriend(index)}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                  {/* Remove button (hide if split is true) */}
+                  {!split && (
+                    <button
+                      className="btn btn-square btn-outline"
+                      onClick={() => handleRemoveFriend(index)}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
           )}
           {/* Button to split the amount equally */}
-          {friends.length > 0 && (
+          {friends.length > 0 && !split && (
             <div className="flex justify-between mb-4">
               <button
                 className="btn w-1/2 bg-black text-white text-base hover:bg-white hover:text-black border-black hover:border-black mr-2"
@@ -384,6 +413,16 @@ const SplitBill = () => {
                 onClick={handleSubmit}
               >
                 Submit
+              </button>
+            </div>
+          )}
+          {split && (
+            <div className="flex justify-between mb-4">
+              <button
+                className="btn w-full bg-black text-white text-base hover:bg-white hover:text-black border-black hover:border-black mr-2"
+                onClick={() => router.push("/dashboard/bills")}
+              >
+                Return to Bills
               </button>
             </div>
           )}
