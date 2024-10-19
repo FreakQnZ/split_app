@@ -174,13 +174,13 @@ const SplitBill = () => {
     setFriends(updatedFriends);
   };
 
-//   const handleRemoveFriend = (index) => {
-//     const removedFriendId = friends[index].id;
-//     console.log(removedFriendId);
-//     const updatedFriends = friends.filter((_, i) => i !== index);
-//     setFriends(updatedFriends);
-//     setRemovedParticipantIds((prev) => [...prev, removedFriendId]);
-//   };
+  //   const handleRemoveFriend = (index) => {
+  //     const removedFriendId = friends[index].id;
+  //     console.log(removedFriendId);
+  //     const updatedFriends = friends.filter((_, i) => i !== index);
+  //     setFriends(updatedFriends);
+  //     setRemovedParticipantIds((prev) => [...prev, removedFriendId]);
+  //   };
   const handleRemoveFriend = (index) => {
     const updatedFriends = friends.filter((_, i) => i !== index);
     setFriends(updatedFriends);
@@ -230,8 +230,11 @@ const SplitBill = () => {
     }
 
     const billAmount = amounts.reduce((sum, amount) => sum + amount, 0);
-    if (billAmount > totalAmount) {  // Assuming `billAmount` is the actual bill amount
-      setError("The total amount allocated to participants exceeds the bill amount.");
+    if (billAmount > totalAmount) {
+      // Assuming `billAmount` is the actual bill amount
+      setError(
+        "The total amount allocated to participants exceeds the bill amount."
+      );
       return;
     }
 
@@ -263,6 +266,29 @@ const SplitBill = () => {
       const data = await response.json();
 
       if (data.success) {
+        // Send BillId and (billAmount - totalAmount)
+        const amountDifference = totalAmount - billAmount;
+
+        const postResponse = await fetch(`/api/expense`, {
+          // Replace with your actual endpoint
+          method: "PUT", // Assuming you're sending data with POST
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            billId,
+            amount: amountDifference,
+          }),
+        });
+
+        const postData = await postResponse.json();
+        if (!postData.success) {
+          console.error(
+            "Failed to send billId and amount difference:",
+            postData.message
+          );
+        }
+
         if (!isEditing) {
           setIsModalOpen(true);
           setFriends([]);
