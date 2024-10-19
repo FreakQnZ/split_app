@@ -324,10 +324,10 @@ const SplitBill = () => {
   // Inside your SplitBill component
 
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center items-center p-4">
+    <div className=" bg-gray-100 flex justify-center items-center p-4">
       <div
         className="flex flex-col lg:flex-row gap-6 w-full max-w-4xl"
-        style={{ height: "calc(100vh - 64px)" }}
+        style={{ height: "86vh" }}
       >
         <div className="flex-1 bg-white shadow-lg rounded-lg p-10">
           <h2 className="text-2xl font-bold mb-4 text-center">Split Bill</h2>
