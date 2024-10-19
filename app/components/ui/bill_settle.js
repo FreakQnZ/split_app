@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 // import { useRouter } from "next/navigation";
 
-const BillSettle = ({ id, Name, amount, time, BillName }) => {
+const BillSettle = ({ id, Name, amount, time, BillName, fetchData }) => {
     //   const router = useRouter();
     const date = new Date(time);
 
@@ -15,6 +15,24 @@ const BillSettle = ({ id, Name, amount, time, BillName }) => {
 
     // Format the string as "HH:MM DD-MM-YYYY"
     const newStr = `${hours}:${minutes} ${day}-${month}-${year}`;
+
+    const handleSettle = async () => {
+        const res = await fetch ("api/bill/settle", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                billId: id,
+                username: localStorage.getItem("username"),
+            }),
+        })
+        const data = await res.json();
+        if (data.success) {
+            fetchData();
+        }
+    }
+
     return (
         <div className="bg-gray-100 w-full shadow-xl rounded-md p-2">
             <div className="flex h-full p-5 flex-col justify-between gap-4">
@@ -48,7 +66,7 @@ const BillSettle = ({ id, Name, amount, time, BillName }) => {
                 <p className="text-xs font-semibold p-3 pl-0">{newStr}</p>
                 <p className="text-xl font-semibold">From: {Name}</p>
                 <div className="pt-5 flex gap-3">
-                    <button
+                    <button onClick={handleSettle}
                         className="btn flex-1 hover:bg-green-600 hover:text-white bg-white text-green-600 border-green-600"
                     >
                         Settle

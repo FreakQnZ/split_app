@@ -43,6 +43,7 @@ function Dashboard() {
                                 amount={bill.amount}
                                 time={bill.time}
                                 BillName={bill.bill}
+                                fetchData={fetchBills}
                             />
                         ))}
                     </div>
