@@ -15,7 +15,7 @@ export async function GET(req) {
         });
       }
 
-      const query2 = `select bp.id as id, u.username as From, bp.amount_owed as amount, b.bill_name as bill, b.created_at as time from bill_participants bp, bills b, users u where bp.bill_id = b.bill_id and b.user_id = u.user_id and bp.user_id = $1;`;
+      const query2 = `select bp.id as id, u.username as From, bp.amount_owed as amount, b.bill_name as bill, b.created_at as time from bill_participants bp, bills b, users u where bp.bill_id = b.bill_id and b.user_id = u.user_id and bp.user_id = $1 and bp.settled = false;`;
       const res = await pool.query(query2, [currentUserQuery.rows[0].user_id]);
 
       if (!res) {
