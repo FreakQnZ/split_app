@@ -38,7 +38,7 @@ export async function GET(req) {
 
       // Add the participant ID to the query
       query2 = `
-        SELECT u.username AS "From", bp.amount_owed AS amount, b.bill_name AS bill, b.created_at AS time
+        SELECT u.username AS "From", bp.amount_owed AS amount, b.bill_name AS bill, b.created_at AS time, bp.id
         FROM bill_participants bp
         JOIN bills b ON bp.bill_id = b.bill_id
         JOIN users u ON b.user_id = u.user_id
@@ -49,7 +49,7 @@ export async function GET(req) {
     } else {
       // If no participant is provided, fetch all bills where the current user owes money
       query2 = `
-        SELECT u.username AS "From", bp.amount_owed AS amount, b.bill_name AS bill, b.created_at AS time
+        SELECT u.username AS "From", bp.amount_owed AS amount, b.bill_name AS bill, b.created_at AS time, bp.id
         FROM bill_participants bp
         JOIN bills b ON bp.bill_id = b.bill_id
         JOIN users u ON b.user_id = u.user_id
@@ -75,6 +75,7 @@ export async function GET(req) {
       amount: row.amount,
       bill: row.bill,
       time: row.time,
+      id: row.id,
     }));
 
     return NextResponse.json({

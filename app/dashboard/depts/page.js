@@ -8,11 +8,13 @@ const DeptsPage = () => {
   const [peopleOwing, setPeopleOwing] = useState([]); // People I owe
   const [loadingOwed, setLoadingOwed] = useState(true);
   const [loadingOwing, setLoadingOwing] = useState(true);
+  const [settling, setSettling] = useState(null); // Track the settling process
   const currentUser = localStorage.getItem("username");
 
   // Fetch people who owe me money
   useEffect(() => {
     const fetchPeopleOwed = async () => {
+      setLoadingOwed(true);
       try {
         const response = await fetch(
           `/api/bill/split/touser?user=${currentUser}`
@@ -34,25 +36,51 @@ const DeptsPage = () => {
   }, [currentUser]);
 
   // Fetch people I owe money to
-  useEffect(() => {
-    const fetchPeopleOwing = async () => {
-      try {
-        const response = await fetch(`/api/bill/pending?user=${currentUser}`);
-        const data = await response.json();
-        if (data.success) {
-          setPeopleOwing(data.data); // Data of people I owe money to
-        } else {
-          console.log(data.message);
-        }
-      } catch (error) {
-        console.error("Error fetching people I owe money to:", error);
-      } finally {
-        setLoadingOwing(false);
+  const fetchPeopleOwing = async () => {
+    setLoadingOwing(true);
+    try {
+      const response = await fetch(`/api/bill/pending?user=${currentUser}`);
+      const data = await response.json();
+      if (data.success) {
+        setPeopleOwing(data.data); // Data of people I owe money to
+        console.log(data.data);
+      } else {
+        console.log(data.message);
       }
-    };
-
+    } catch (error) {
+      console.error("Error fetching people I owe money to:", error);
+    } finally {
+      setLoadingOwing(false);
+    }
+  };
+  useEffect(() => {
     if (currentUser) fetchPeopleOwing();
   }, [currentUser]);
+
+  // Settle a debt
+  const handleSettle = async (splitId) => {
+    setSettling(splitId); // Show that this person is being settled
+    try {
+      const response = await fetch(`/api/bill/split/settle`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user: currentUser, splitId }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        // Filter out the person who has been settled
+        fetchPeopleOwing();
+      } else {
+        console.error(result.message);
+      }
+    } catch (error) {
+      console.error("Error settling debt:", error);
+    } finally {
+      setSettling(null); // Reset the settling state
+    }
+  };
 
   return (
     <div className="p-6 bg-gray-100">
@@ -127,14 +155,28 @@ const DeptsPage = () => {
             </main>
           ) : peopleOwing.length > 0 ? (
             <ul className="space-y-4">
-              {peopleOwing.map((person) => (
-                <li key={person.id} className="p-4 bg-gray-50 rounded shadow">
-                  <p>
-                    <strong>{person.from}</strong> is owed{" "}
-                    <strong>${person.amount}</strong> for{" "}
-                    <strong>{person.bill}</strong>
-                  </p>
-                  <p>Owed since: {new Date(person.time).toLocaleString()}</p>
+              {peopleOwing.map((split) => (
+                <li
+                  key={split.id}
+                  className="p-4 bg-gray-50 rounded shadow flex justify-between items-center"
+                >
+                  <div>
+                    <p>
+                      <strong>{split.from}</strong> is owed{" "}
+                      <strong>${split.amount}</strong> for{" "}
+                      <strong>{split.bill}</strong>
+                    </p>
+                    <p>Owed since: {new Date(split.time).toLocaleString()}</p>
+                  </div>
+
+                  <button
+                    onClick={() => handleSettle(split.id)}
+                    className={`ml-4 px-4 py-2 bg-green-500 text-white rounded ${
+                      settling === split.id ? "opacity-50" : ""
+                    }`}
+                  >
+                    {settling === split.id ? "Settling..." : "Settle"}
+                  </button>
                 </li>
               ))}
             </ul>

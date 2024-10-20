@@ -1,5 +1,6 @@
 import pool from "@/app/utils/connectDB";
 import { NextResponse } from "next/server";
+import { binary } from "pg/lib/defaults";
 
 //  Gives the list of people who owe me money, or a specific participant
 
@@ -40,7 +41,7 @@ export async function GET(req) {
 
       // Add the participant ID to the query
       query2 = `
-        SELECT u.username, bp.amount_owed, b.created_at, b.bill_name
+        SELECT u.username, bp.amount_owed, b.created_at, b.bill_name,bp.id
         FROM bills b
         JOIN bill_participants bp ON b.bill_id = bp.bill_id
         JOIN users u ON u.user_id = bp.user_id
@@ -52,7 +53,7 @@ export async function GET(req) {
     } else {
       // If no participant is provided, fetch all participants
       query2 = `
-        SELECT u.username, bp.amount_owed, b.created_at, b.bill_name
+        SELECT u.username, bp.amount_owed, b.created_at, b.bill_name,bp.id
         FROM bills b
         JOIN bill_participants bp ON b.bill_id = bp.bill_id
         JOIN users u ON u.user_id = bp.user_id
@@ -77,6 +78,7 @@ export async function GET(req) {
       amount_owed: row.amount_owed,
       created_at: row.created_at,
       bill_name: row.bill_name,
+      id: row.id,
     }));
 
     return NextResponse.json({

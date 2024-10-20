@@ -43,7 +43,7 @@ export default function withAuth(Component) {
 
     if (loading) {
       return (
-        <div className="min-h-screen flex justify-center items-center">
+        <div className=" flex justify-center items-center">
           <span className="loading loading-spinner loading-lg"></span>
         </div>
       );
