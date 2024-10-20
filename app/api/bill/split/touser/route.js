@@ -46,6 +46,7 @@ export async function GET(req) {
         JOIN users u ON u.user_id = bp.user_id
         WHERE b.user_id = $1 AND bp.amount_owed > 0 AND bp.settled = false
         AND u.user_id = $2
+        ORDER BY b.created_at
       `;
       queryParams.push(participantId);
     } else {
