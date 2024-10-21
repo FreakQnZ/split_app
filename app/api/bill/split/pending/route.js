@@ -1,7 +1,7 @@
 import pool from "@/app/utils/connectDB";
 import { NextResponse } from "next/server";
 
-// /api/bill/pending : Gives the list of people who I owe money to, or a specific participant
+// /api/bill/split/pending : Gives the list of people who I owe money to, or a specific participant
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const username = searchParams.get("user");

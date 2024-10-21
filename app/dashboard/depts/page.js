@@ -39,7 +39,9 @@ const DeptsPage = () => {
   const fetchPeopleOwing = async () => {
     setLoadingOwing(true);
     try {
-      const response = await fetch(`/api/bill/pending?user=${currentUser}`);
+      const response = await fetch(
+        `/api/bill/split/pending?user=${currentUser}`
+      );
       const data = await response.json();
       if (data.success) {
         setPeopleOwing(data.data); // Data of people I owe money to
